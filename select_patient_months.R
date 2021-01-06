@@ -7,7 +7,7 @@
 # - discard patients with very little treatment service
 
 # libraries -----------------------------------------------------------------------------
-install.packages("datasources/GiG_0.18.2020.10.12.zip", repos = NULL, type = "win.binary")
+#install.packages("datasources/GiG_0.18.2020.10.12.zip", repos = NULL, type = "win.binary")
 library(GiG)
 library(dplyr)
 library(lubridate)
@@ -30,6 +30,8 @@ target_dx_codes <- dx_codes %>%
   distinct(dx_code) %>%
   pull(dx_code)
 
+# read postcode info
+load(file="postcode.Rda")
 
 # find patients
 d <-
@@ -47,17 +49,23 @@ d <-
   # filter by target_period
   left_join(
     clients %>%
-      select(client_id, date, gender, year_of_birth) %>%
+      select(client_id, date, gender, year_of_birth, zip) %>%
       rename(enroll_date = date),
     by = "client_id") %>%
   filter(my_sys_date - dx_date >= target_period) %>%
   select(client_id, gender, year_of_birth, enroll_date, everything()) %>%
   
+  # match zip
+  left_join(postcode, by = "zip") %>%
+  
   # filter patients with enrollment data > dx date
   filter(!is.na(enroll_date) & dx_date >= enroll_date) %>%
   
   # sort
-  arrange(-as.numeric(enroll_date))
+  arrange(-as.numeric(enroll_date)) %>%
+  
+  # drop zip
+  select(-zip)
 
 
 # add costs -----------------------------------------------------
@@ -305,20 +313,26 @@ save(file = "data/patient_months_interventions.Rda" ,patient_months_intervention
 #   save_to_xls = TRUE
 # )
 
+file.remove("postcode.Rda")
+
 ## Clean tmp vars ----------------------------------
 rm(
   cat_intervention_types,
   d,
   di_mins,
   di_n,
-  tmp,
   i,
-  ib,
+  i_cat,
   i_summary,
-  ib_summary,
   i_mins,
   i_n,
+  i_team,
+  ib,
+  ib_summary,
+  ic,
+  m_i_cat, 
   n,
+  postcode,
   target_dx_codes,
   target_dx_major_nl,
   target_period
