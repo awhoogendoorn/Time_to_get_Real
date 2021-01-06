@@ -10,8 +10,8 @@ library("lubridate")
 
 load("data/patients.Rda")
 rm("patients")
-load("patient_months_interventions.Rda")
-load("patients_cluster.Rda")
+load("data/patient_months_interventions.Rda")
+load("data/patients_cluster.Rda")
 patients<-patients_cluster
 rm("patients_cluster")
 
@@ -128,7 +128,7 @@ patient_months_romscores <- patient_months_romscores %>%
 ##
 rm(clients_keytable)
 
-save(file = "patients_anonymised_time_to_get_real.Rda" , 
+save(file = "data/patients_anonymised_time_to_get_real.Rda" , 
      patients, 
      patient_months_interventions,
      patient_months_diagnoses,
