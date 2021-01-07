@@ -30,8 +30,6 @@ target_dx_codes <- dx_codes %>%
   distinct(dx_code) %>%
   pull(dx_code)
 
-# read postcode info
-load(file="postcode.Rda")
 
 # find patients
 d <-
@@ -55,17 +53,12 @@ d <-
   filter(my_sys_date - dx_date >= target_period) %>%
   select(client_id, gender, year_of_birth, enroll_date, everything()) %>%
   
-  # match zip
-  left_join(postcode, by = "zip") %>%
-  
   # filter patients with enrollment data > dx date
   filter(!is.na(enroll_date) & dx_date >= enroll_date) %>%
   
   # sort
-  arrange(-as.numeric(enroll_date)) %>%
+  arrange(-as.numeric(enroll_date))
   
-  # drop zip
-  select(-zip)
 
 
 # add costs -----------------------------------------------------
@@ -313,8 +306,6 @@ save(file = "data/patient_months_interventions.Rda" ,patient_months_intervention
 #   save_to_xls = TRUE
 # )
 
-file.remove("postcode.Rda")
-
 ## Clean tmp vars ----------------------------------
 rm(
   cat_intervention_types,
@@ -332,7 +323,6 @@ rm(
   ic,
   m_i_cat, 
   n,
-  postcode,
   target_dx_codes,
   target_dx_major_nl,
   target_period

@@ -1,3 +1,7 @@
+# Cluster analysis
+rm(list = ls(all.names = TRUE)) 
+
+
 # libraries -----------------------------------------------------------------------------
 library(GiG)
 library(data.table)
@@ -53,13 +57,14 @@ ms <- ms[names(ms)[unlist(lapply(ms, function(x) sd(x) > 0) ) == TRUE]]
 
 
 # dist -----------------------------------------------------------------------------------
-memory.limit(8192)
+memory.limit(10240)
 di <-  parDist(as.matrix(ms), method = "fJaccard")
 qplot(as.numeric(di), geom = "density")
 
 # simplify ------------------------------------------------------------------------------- (20m)
 pc <- cmdscale(di, k = 8, eig = TRUE)
 plot(pc$eig[1:15])
+rm(di)
 
 # cluster --------------------------------------------------------------------------------
 x <- parDist(as.matrix(pc$points), method = "euclidean")

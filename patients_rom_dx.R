@@ -15,6 +15,18 @@ load("data/patients_cluster.Rda")
 patients<-patients_cluster
 rm("patients_cluster")
 
+# read postcode info
+load(file="./datasources/postcode/postcode.Rda")
+# match zip code
+p<- patients %>% 
+   left_join(postcode, by = "zip") %>%
+   select(-zip) %>%
+   select(client_id, gender, year_of_birth, 
+          p_nl_achtg, p_we_mig_a, p_nw_mig_a, p_huurwon,
+          p_koopwon, m_inkhh, p_link_hh, p_hink_hh, oad, sted, lbrmtr,
+          enroll_date, everything())
+
+  
 ## ROM: create m_rom
 bsi <- score_bsi(patients_GIG$rom_items$bsi, t_scores = TRUE) %>% 
   rename(score = gs) %>% 
