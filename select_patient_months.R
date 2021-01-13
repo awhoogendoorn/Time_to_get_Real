@@ -123,6 +123,13 @@ i_summary <- i[ ,
                   minss = round(sum((1-bggz)*(mins_direct_staff + mins_indirect_staff)), 0)), 
 by = "client_id"]
 
+attributes(i_summary$n)$label     <- "Number of Interventions"
+attributes(i_summary$nb)$label    <- "Number of BGGZ Interventions"
+attributes(i_summary$ns)$label    <- "Number of SGGZ Interventions"
+attributes(i_summary$mins)$label  <- "Minutes of Interventions"
+attributes(i_summary$minsb)$label <- "Minutes of BGGZ Interventions"
+attributes(i_summary$minss)$label <- "Minutes of SGGZ Interventions"
+
 setorder(i, client_id, date)
 i[, day := as.numeric(date - dx_date), by = "client_id"]
 
@@ -207,6 +214,13 @@ m_i_summary <- i[ ,
                   minsb = round(sum(bggz*(mins_direct_staff + mins_indirect_staff)), 0), 
                   minss = round(sum((1-bggz)*(mins_direct_staff + mins_indirect_staff)), 0)), 
                 by = c("client_id", "year", "month")]
+
+attributes(m_i_summary$n)$label     <- "Number of Interventions"
+attributes(m_i_summary$nb)$label    <- "Number of BGGZ Interventions"
+attributes(m_i_summary$ns)$label    <- "Number of SGGZ Interventions"
+attributes(m_i_summary$mins)$label  <- "Minutes of Interventions"
+attributes(m_i_summary$minsb)$label <- "Minutes of BGGZ Interventions"
+attributes(m_i_summary$minss)$label <- "Minutes of SGGZ Interventions"
 
 
 m_i_cat <- i[,

@@ -36,7 +36,6 @@ postcode <- p %>%
   mutate(m_inkhh=as.factor(m_inkhh)) %>%
   mutate_if(is.numeric, list(~na_if(., -99997)))
 
-
 # Leefbaarheidscores 
 p<- read.csv2("./datasources/postcode/LBM4pc9812_0.2.0.csv")
 p2 <-  p %>% 
@@ -46,6 +45,19 @@ p2 <-  p %>%
 postcode <- postcode %>% 
   left_join(p2 , by = "zip")
 rm(p, p2)
+
+attributes(postcode$p_nl_achtg)$label <- "Percentage Nederlandse achtergrond"
+attributes(postcode$p_we_mig_a)$label <- "Percentage Westerse Migratieachtergrond"
+attributes(postcode$p_nw_mig_a)$label <- "Percentage Niet-Westerse Migratieachtergrond"
+attributes(postcode$p_huurwon)$label  <- "Percentage Huurwoningen"
+attributes(postcode$p_koopwon)$label  <- "Percentage Koopwoningen"
+attributes(postcode$m_inkhh)$label    <- "Mediaan Huishoudinkomen"
+attributes(postcode$p_link_hh)$label  <- "Percentage Lage Inkomens Huishoudens"
+attributes(postcode$p_hink_hh)$label  <- "Percentage Hoge Inkomens Huishoudens"
+attributes(postcode$oad)$label        <- "Omgevingsadressendichtheid"
+attributes(postcode$sted)$label       <- "Stedelijkheid"
+attributes(postcode$lbrmtr)$label     <- "Leefbaarheid"
+
 
 postcode %>% 
   summarise_if(is.numeric, min, na.rm = TRUE)
