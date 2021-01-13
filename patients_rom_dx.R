@@ -1,4 +1,3 @@
-
 rm(list = ls(all.names = TRUE)) 
 library("dplyr")
 library("tidyr")
@@ -15,10 +14,10 @@ load("data/patients_cluster.Rda")
 patients<-patients_cluster
 rm("patients_cluster")
 
-# read postcode info
+# add postcode info
 load(file="./datasources/postcode/postcode.Rda")
 # match zip code
-p<- patients %>% 
+patients <- patients %>% 
    left_join(postcode, by = "zip") %>%
    select(-zip) %>%
    select(client_id, gender, year_of_birth, 

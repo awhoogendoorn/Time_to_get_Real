@@ -63,19 +63,17 @@ d <-
 
 # add costs -----------------------------------------------------
 
-# AH: selection on SGGZ should be included, I guess:
-# ic %>% group_by(GGZ_type) %>% count(GGZ_type) 
-# ic %>% subset(GGZ_type=="BGGZ")%>% group_by(year(date_start)) %>% count(GGZ_type) 
-# ic <- subset(dbc, client_id %in% d$client_id & !is.na(date_stop)) 
-ic <- subset(dbc, client_id %in% d$client_id & !is.na(date_stop)) %>%
- subset(GGZ_type=="SGGZ")
+# AH: NO selection on SGGZ should be made
+# ic <- subset(dbc, client_id %in% d$client_id & !is.na(date_stop)) %>%
+#  subset(GGZ_type=="SGGZ")
+ic <- subset(dbc, client_id %in% d$client_id & !is.na(date_stop))
 ic <- merge(ic, d[, c("client_id", "dx_date")])
 setorder(ic, client_id, date_stop)
 ic <- subset(ic, date_stop > dx_date)
 
 ic <- ic %>% 
-  group_by(client_id) %>%
-  summarise(costs = sum(claimed, na.rm = TRUE))
+ group_by(client_id) %>%
+ summarise(costs = sum(claimed, na.rm = TRUE))
 
 d <- merge(d, ic)
 
@@ -113,12 +111,17 @@ setorder(i, client_id, date)
 i[, day := as.numeric(date - dx_date), by = "client_id"]
 i <- subset(i, day >= 0)
 i <- subset(i, day <= target_period)
+i$bggz = as.numeric((i$dbc_id<0) & (!is.na(i$dbc_id))) 
 
 i_summary <- i[ , 
                 .(days = max(day), 
                   n = .N,
-                  mins = round(sum(mins_direct_staff + mins_indirect_staff), 0)), 
-                by = "client_id"]
+                  nb = sum(bggz),
+                  ns = sum(1-bggz),
+                  mins = round(sum(mins_direct_staff + mins_indirect_staff), 0),
+                  minsb = round(sum(bggz*(mins_direct_staff + mins_indirect_staff)), 0), 
+                  minss = round(sum((1-bggz)*(mins_direct_staff + mins_indirect_staff)), 0)), 
+by = "client_id"]
 
 setorder(i, client_id, date)
 i[, day := as.numeric(date - dx_date), by = "client_id"]
@@ -195,6 +198,17 @@ i$year  <- year(i$date)
 i$month <- month(i$date)
 
 # calculate n and minutes in each activity, per client X month
+m_i_summary <- i[ , 
+                .(days = max(day), 
+                  n = .N,
+                  nb = sum(bggz),
+                  ns = sum(1-bggz),
+                  mins = round(sum(mins_direct_staff + mins_indirect_staff), 0),
+                  minsb = round(sum(bggz*(mins_direct_staff + mins_indirect_staff)), 0), 
+                  minss = round(sum((1-bggz)*(mins_direct_staff + mins_indirect_staff)), 0)), 
+                by = c("client_id", "year", "month")]
+
+
 m_i_cat <- i[,
         .(
           n = .N,
@@ -236,8 +250,9 @@ names(m_i_mins)[4:ncol(m_i_mins)] <- paste0("mins_", n)
 n <- tolower(names(m_i_n))[4:ncol(m_i_n)]
 names(m_i_n)[4:ncol(m_i_n)] <- paste0("n_", n)
 
-patient_months_interventions <- merge(m_i_n, m_i_mins, by = c("client_id", "year", "month"))
-rm(m_i_n, m_i_mins)
+patient_months_interventions <- merge(m_i_summary, m_i_n, by = c("client_id", "year", "month"))
+patient_months_interventions <- merge(patient_months_interventions , m_i_mins, by = c("client_id", "year", "month"))
+rm(m_i_summary, m_i_n, m_i_mins)
 
 # add team info -------------------------------------------------------------------------
 
