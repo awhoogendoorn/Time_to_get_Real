@@ -35,6 +35,30 @@ bsi <- score_bsi(patients_GIG$rom_items$bsi, t_scores = TRUE) %>%
   mutate(month = month(date)) %>%
   select(client_id, year, month, date, score) %>%
   mutate(rom="bsi")
+ids_sr <- score_ids_sr(patients_GIG$rom_items$ids_sr, t_scores = TRUE) %>% 
+  rename(score = ids_sr) %>% 
+  subset(!is.na(date)) %>%
+  select(client_id, date, score) %>%
+  mutate(year = year(date)) %>%
+  mutate(month = month(date)) %>%
+  select(client_id, year, month, date, score) %>%
+  mutate(rom="ids_sr")
+madrs <- score_madrs(patients_GIG$rom_items$madrs, t_scores = TRUE) %>% 
+  rename(score = madrs) %>% 
+  subset(!is.na(date)) %>%
+  select(client_id, date, score) %>%
+  mutate(year = year(date)) %>%
+  mutate(month = month(date)) %>%
+  select(client_id, year, month, date, score) %>%
+  mutate(rom="madrs")
+phq9 <- score_phq9(patients_GIG$rom_items$phq9, t_scores = TRUE) %>% 
+  rename(score = phq9) %>% 
+  subset(!is.na(date)) %>%
+  select(client_id, date, score) %>%
+  mutate(year = year(date)) %>%
+  mutate(month = month(date)) %>%
+  select(client_id, year, month, date, score) %>%
+  mutate(rom="phq9")
 sq48 <- score_sq48(patients_GIG$rom_items$sq48, t_scores = TRUE) %>% 
   rename(score = sq48) %>% 
   subset(!is.na(date)) %>%
@@ -59,7 +83,7 @@ honos <- score_honos(patients_GIG$rom_items$honos, t_scores = TRUE) %>%
   mutate(month = month(date)) %>%
   select(client_id, year, month, date, score) %>%
   mutate(rom="honos")
-rom <- rbind(bsi, sq48, oq45, honos) %>%
+rom <- rbind(bsi, ids_sr, madrs, phq9, sq48, oq45, honos) %>%
   arrange(client_id, year, month, rom, date)
 # wide 
 rom %>%
@@ -68,21 +92,24 @@ rom %>%
   ungroup() %>% 
   group_by(idx) %>% 
   summarise(n=n())
-# max 6 instances
+# max 12 instances
 patient_months_romscores <- rom %>%
   mutate(date = as.character(date)) %>%
   group_by(client_id, year, month) %>%
-  mutate(.id = row_number()) %>%
+  mutate(.id = formatC(row_number(),width=2, flag="0")) %>%
   mutate(nrom = n()) %>%
   ungroup() %>%
   gather(var, val, score, rom, date) %>%
   unite(Var, var, .id) %>%
   spread(Var, val) %>%
   select(client_id, year, month, nrom, 
-         date_1, rom_1, score_1, date_2, rom_2, score_2,
-         date_3, rom_3, score_3, date_4, rom_4, score_4,
-         date_5, rom_5, score_5, date_6, rom_6, score_6)
-rm(bsi, sq48, oq45, honos, rom)
+         date_01, rom_01, score_01, date_02, rom_02, score_02,
+         date_03, rom_03, score_03, date_04, rom_04, score_04,
+         date_05, rom_05, score_05, date_06, rom_06, score_06,
+         date_07, rom_07, score_07, date_08, rom_08, score_08,
+         date_09, rom_09, score_09, date_10, rom_10, score_10,
+         date_11, rom_11, score_11, date_12, rom_12, score_12)
+rm(bsi, ids_sr, madrs, phq9, sq48, oq45, honos)
 
 ## m_diag: diagnoses per month for patients in R data file ------------------------------ 
 patient_months_diagnoses <- subset(patients_GIG$diagnoses$dx, client_id %in% patients$client_id) %>%

@@ -103,15 +103,17 @@ ib_summary$mins.prev[is.na(ib_summary$mins.prev)] <- 0
 
 # treatment summary (after dx) ----------------------------------------------------------
 i <- subset(interventions, client_id %in% d$client_id)
+i$bggz = as.numeric((i$dbc_id<0) & (!is.na(i$dbc_id))) 
 
 # merge dx_date
 i <- merge(i, d[, c("client_id", "dx_date")])
 
 setorder(i, client_id, date)
 i[, day := as.numeric(date - dx_date), by = "client_id"]
-i <- subset(i, day >= 0)
 i <- subset(i, day <= target_period)
-i$bggz = as.numeric((i$dbc_id<0) & (!is.na(i$dbc_id))) 
+
+i2 <- subset(i, day >= -2*365)
+i <- subset(i, day >= 0)   
 
 i_summary <- i[ , 
                 .(days = max(day), 
@@ -130,10 +132,6 @@ attributes(i_summary$mins)$label  <- "Minutes of Interventions"
 attributes(i_summary$minsb)$label <- "Minutes of BGGZ Interventions"
 attributes(i_summary$minss)$label <- "Minutes of SGGZ Interventions"
 
-setorder(i, client_id, date)
-i[, day := as.numeric(date - dx_date), by = "client_id"]
-
-
 
 # Treatment activities (after dx): minutes & n  -----------------------------------------
 
@@ -141,7 +139,7 @@ i[, day := as.numeric(date - dx_date), by = "client_id"]
 # - use activity description instead of code, since multiple codes appear
 # to be used for registering the same activity
 # - use categorized descriptions to reduce the feature space
-
+i<-i2
 cat_intervention_types <- read.xlsx("datasources/intervention_types.xlsx")
 cat_intervention_types$description <- iconv(cat_intervention_types$description, 
                                             "latin1", "ASCII", sub = " ")
@@ -152,8 +150,11 @@ i <- merge(i,
            cat_intervention_types[c(1, 4)], 
            by = "intervention_type_id", 
            all.x = TRUE)
+i2<- i
+i <- subset(i, day >= 0)   
 
 # calculate n and minutes in each activity, per client
+
 i_cat <- i[,
            .(
              n = .N,
@@ -201,6 +202,7 @@ di_n <- i_n
 # to be used for registering the same activity
 # - use categorized descriptions to reduce the feature space
 #################################################################
+i<-i2
 i$year  <- year(i$date)
 i$month <- month(i$date)
 
@@ -269,8 +271,10 @@ patient_months_interventions <- merge(patient_months_interventions , m_i_mins, b
 rm(m_i_summary, m_i_n, m_i_mins)
 
 # add team info -------------------------------------------------------------------------
-
+i2<- i
+i <- subset(i, day >= 0)   
 # calculate n, per team
+
 i_team <- i[,
             .(
               n = .N,
